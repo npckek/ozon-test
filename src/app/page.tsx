@@ -7,6 +7,8 @@ import ExpenseForm from '@/components/ExpenseForm';
 import ExpenseList from '@/components/ExpenseList';
 import Summary from '@/components/Summary';
 import { CATEGORIES } from '@/constants/categories';
+import ExpenseChart from '@/components/ExpenseChart';
+
 
 export default function Home() {
   const [expenses, setExpenses] = useLocalStorage<Expense[]>('expenses', []);
@@ -75,6 +77,12 @@ const filteredExpenses = expenses.filter(e => {
           <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="border p-2 rounded bg-white mx-2"/>
           <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="border p-2 rounded bg-white"/>
           <Summary expenses={filteredExpenses}/>
+
+          <div className="border rounded-lg p-4 bg-white shadow-sm">
+            <h3 className="text-lg font-bold mb-4">Расходы по категориям</h3>
+            <ExpenseChart expenses={filteredExpenses} />
+          </div>
+
           <div className="border rounded-lg p-4 bg-white shadow-sm">
             <h3 className="text-lg font-bold mb-4">История трат</h3>
             <ExpenseList 
