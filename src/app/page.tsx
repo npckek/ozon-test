@@ -11,10 +11,21 @@ import { CATEGORIES } from '@/constants/categories';
 export default function Home() {
   const [expenses, setExpenses] = useLocalStorage<Expense[]>('expenses', []);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
 
-  const filteredExpenses = expenses.filter(e =>
-  categoryFilter === 'all' ? true : e.category === categoryFilter
-);
+const filteredExpenses = expenses.filter(e => {
+  const categoryMatch =
+    categoryFilter === 'all' || e.category === categoryFilter;
+
+  const expenseDate = new Date(e.date).getTime();
+  const fromDate = dateFrom ? new Date(dateFrom).getTime() : -Infinity;
+  const toDate = dateTo ? new Date(dateTo).getTime() : Infinity;
+  const dateMatch = expenseDate >= fromDate && expenseDate <= toDate;
+
+  return categoryMatch && dateMatch;
+});
+
 
   const handleAddExpense = (newExpenseData: Omit<Expense, 'id' | 'createdAt'>) => {
     const newExpense: Expense = {
@@ -51,7 +62,9 @@ export default function Home() {
               </option>
             ))}
           </select>
-          <Summary expenses={expenses} />
+          <input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="border p-2 rounded bg-white mx-2"/>
+          <input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="border p-2 rounded bg-white"/>
+          <Summary expenses={filteredExpenses}/>
           <div className="border rounded-lg p-4 bg-white shadow-sm">
             <h3 className="text-lg font-bold mb-4">История трат</h3>
             <ExpenseList 
