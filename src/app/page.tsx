@@ -10,6 +10,7 @@ import { CATEGORIES } from '@/constants/categories';
 
 export default function Home() {
   const [expenses, setExpenses] = useLocalStorage<Expense[]>('expenses', []);
+  const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
@@ -40,13 +41,22 @@ const filteredExpenses = expenses.filter(e => {
     setExpenses(expenses.filter(e => e.id !== id));
   };
 
+  const handleUpdateExpense = (updated: Expense) => {
+  setExpenses(expenses.map(e => (e.id === updated.id ? updated : e)));
+  setEditingExpense(null);
+};
+
   return (
     <main className="max-w-4xl mx-auto p-4 md:p-8 space-y-8 bg-gray-700 rounded-lg">
       <h1 className="text-3xl font-bold text-center">Трекер расходов</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-1">
-          <ExpenseForm onAdd={handleAddExpense} />
+          <ExpenseForm onAdd={handleAddExpense}  
+          onUpdate={handleUpdateExpense}
+          editingExpense={editingExpense}
+          onCancelEdit={() => setEditingExpense(null)}
+          />
         </div>
         
         <div className="md:col-span-2 space-y-8">
@@ -69,7 +79,8 @@ const filteredExpenses = expenses.filter(e => {
             <h3 className="text-lg font-bold mb-4">История трат</h3>
             <ExpenseList 
               expenses={filteredExpenses}
-              onDelete={handleDeleteExpense} 
+              onDelete={handleDeleteExpense}
+              onEdit={setEditingExpense} 
             />
           </div>
         </div>

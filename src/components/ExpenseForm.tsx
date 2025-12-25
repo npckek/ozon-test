@@ -6,9 +6,12 @@ import { Expense } from '@/types/expense';
 
 interface ExpenseFormProps {
   onAdd: (expense: Omit<Expense, 'id' | 'createdAt'>) => void;
+  onUpdate: (expense: Expense) => void;
+  editingExpense: Expense | null;
+  onCancelEdit: () => void;
 }
 
-export default function ExpenseForm({ onAdd }: ExpenseFormProps) {
+export default function ExpenseForm({ onAdd, onUpdate, editingExpense, onCancelEdit }: ExpenseFormProps) {
   const amountRef = useRef<HTMLInputElement>(null);
   
   const [formData, setFormData] = useState({
@@ -36,22 +39,56 @@ export default function ExpenseForm({ onAdd }: ExpenseFormProps) {
 
   const isFormValid = !errors.amount && !errors.category && !errors.description && !errors.date;
 
+  useEffect(() => {
+  if (editingExpense) {
+    setFormData({
+      amount: editingExpense.amount.toString(),
+      category: editingExpense.category,
+      description: editingExpense.description,
+      date: editingExpense.date,
+    });
+    setTouched({
+      amount: false,
+      category: false,
+      description: false,
+      date: false,
+    });
+  }
+  }, [editingExpense]);
+
+  const resetForm = () => {
+  setFormData({ amount: '', category: '', description: '', date: '' });
+  setTouched({ amount: false, category: false, description: false, date: false });
+  amountRef.current?.focus();
+};
+
+
+
+
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isFormValid) {
-      onAdd({
-        amount: Number(formData.amount),
-        category: formData.category as CategoryId,
-        description: formData.description,
-        date: formData.date,
-      });
-      
-      setFormData({ amount: '', category: '', description: '', date: '' });
-      setTouched({ amount: false, category: false, description: false, date: false });
-      
-      amountRef.current?.focus();
-    }
-  };
+  e.preventDefault();
+  if (!isFormValid) return;
+
+  if (editingExpense) {
+    onUpdate({
+      ...editingExpense,
+      amount: Number(formData.amount),
+      category: formData.category as CategoryId,
+      description: formData.description,
+      date: formData.date,
+    });
+  } else {
+    onAdd({
+      amount: Number(formData.amount),
+      category: formData.category as CategoryId,
+      description: formData.description,
+      date: formData.date,
+    });
+  }
+
+  resetForm();
+};
+
 
   const handleBlur = (field: keyof typeof touched) => {
     setTouched(prev => ({ ...prev, [field]: true }));
@@ -119,8 +156,22 @@ export default function ExpenseForm({ onAdd }: ExpenseFormProps) {
         disabled={!isFormValid}
         className="w-full bg-blue-500 text-white p-2 rounded disabled:bg-gray-300 transition-colors"
       >
-        Добавить
+        <h2 className="text-lg font-bold">
+            {editingExpense ? 'Редактировать трату' : 'Добавить трату'}
+        </h2>
       </button>
+      {editingExpense && (
+        <button
+            type="button"
+            onClick={() => {
+            resetForm();
+            onCancelEdit();
+            }}
+            className="w-full border p-2 rounded"
+        >
+            Отменить редактирование
+        </button>
+      )}
     </form>
   );
 }

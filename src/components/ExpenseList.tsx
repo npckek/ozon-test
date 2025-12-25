@@ -6,9 +6,10 @@ import { CATEGORIES } from '@/constants/categories';
 interface ExpenseListProps {
   expenses: Expense[];
   onDelete: (id: string) => void;
+  onEdit: (expense: Expense) => void;
 }
 
-export default function ExpenseList({ expenses, onDelete }: ExpenseListProps) {
+export default function ExpenseList({ expenses, onDelete, onEdit }: ExpenseListProps) {
   if (expenses.length === 0) {
     return <p className="text-center text-gray-500 py-10">Нет расходов</p>;
   }
@@ -47,6 +48,13 @@ export default function ExpenseList({ expenses, onDelete }: ExpenseListProps) {
               <td className="p-2">{expense.description}</td>
               <td className="p-2 text-right font-medium">{formatValue(expense.amount)}</td>
               <td className="p-2 text-center">
+                <button
+                  onClick={() => onEdit(expense)}
+                  className="text-blue-500 hover:text-blue-700 mr-2"
+                  title="Редактировать"
+                  >
+                  ✏️
+                </button>
                 <button 
                   onClick={() => onDelete(expense.id)}
                   className="text-red-500 hover:text-red-700 transition-colors"
