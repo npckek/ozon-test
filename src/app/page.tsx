@@ -1,13 +1,20 @@
 'use client';
 
+import { useState } from 'react';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { Expense } from '@/types/expense';
 import ExpenseForm from '@/components/ExpenseForm';
 import ExpenseList from '@/components/ExpenseList';
 import Summary from '@/components/Summary';
+import { CATEGORIES } from '@/constants/categories';
 
 export default function Home() {
   const [expenses, setExpenses] = useLocalStorage<Expense[]>('expenses', []);
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+
+  const filteredExpenses = expenses.filter(e =>
+  categoryFilter === 'all' ? true : e.category === categoryFilter
+);
 
   const handleAddExpense = (newExpenseData: Omit<Expense, 'id' | 'createdAt'>) => {
     const newExpense: Expense = {
@@ -23,7 +30,7 @@ export default function Home() {
   };
 
   return (
-    <main className="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+    <main className="max-w-4xl mx-auto p-4 md:p-8 space-y-8 bg-gray-700 rounded-lg">
       <h1 className="text-3xl font-bold text-center">Трекер расходов</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -32,11 +39,23 @@ export default function Home() {
         </div>
         
         <div className="md:col-span-2 space-y-8">
+          <select
+            value={categoryFilter}
+            onChange={e => setCategoryFilter(e.target.value)}
+            className="border p-2 rounded bg-white"
+          >
+            <option value="all">Все категории</option>
+            {CATEGORIES.map(cat => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
           <Summary expenses={expenses} />
           <div className="border rounded-lg p-4 bg-white shadow-sm">
             <h3 className="text-lg font-bold mb-4">История трат</h3>
             <ExpenseList 
-              expenses={expenses} 
+              expenses={filteredExpenses}
               onDelete={handleDeleteExpense} 
             />
           </div>
